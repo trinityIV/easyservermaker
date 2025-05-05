@@ -169,9 +169,9 @@ def games():
         with open(local_json_path, encoding="utf-8") as f:
             data = json.load(f)
         games = data.get("games", [])
-        source = data.get("source", "")
-        last_update = data.get("last_update", "")
-        return render_template_string(GAMES_HTML, games=games, source=source, last_update=last_update)
+        # Passe les variables dans un seul dict context pour éviter le conflit d'arguments
+        context = dict(games=games, source=data.get("source", ""), last_update=data.get("last_update", ""))
+        return render_template_string(GAMES_HTML, **context)
     except Exception as e:
         # Log l'erreur pour debug
         print("Erreur chargement /games :", e)
