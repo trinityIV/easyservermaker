@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>503 - Service indisponible</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      background: linear-gradient(120deg, #232526 0%, #1de9b6 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      color: #fff;
+      overflow: hidden;
+    }
+    .center {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 2;
+    }
+    h1 {
+      font-size: 5em;
+      margin: 0;
+      color: #ffb300;
+      text-shadow: 0 2px 32px #ffb30077;
+      animation: pulse 2s infinite;
+    }
+    h2 {
+      font-size: 2em;
+      margin: 0.5em 0 1em 0;
+      color: #fff;
+      text-shadow: 0 2px 16px #ffb30077;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #ffb300 0%, #ff512f 100%);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: none;
+      box-shadow: 0 2px 12px #ffb30055;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 18px;
+    }
+    .btn:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 6px 24px #ffb30099;
+    }
+    @keyframes pulse {
+      0% { text-shadow: 0 0 8px #ffb30088; }
+      50% { text-shadow: 0 0 24px #ffb300; }
+      100% { text-shadow: 0 0 8px #ffb30088; }
+    }
+  </style>
+</head>
+<body>
+  <div class="center animate__animated animate__fadeInDown">
+    <h1>503</h1>
+    <h2>Service temporairement indisponible</h2>
+    <a href="/" class="btn">⬅ Retour à l'accueil</a>
+  </div>
+</body>
+</html>

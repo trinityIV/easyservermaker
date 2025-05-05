@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Logs Serveur - Easy Host Server</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    body {
+      background: linear-gradient(120deg, #232526 0%, #1de9b6 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      color: #fff;
+    }
+    .blur-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      filter: blur(8px) brightness(0.7) saturate(1.2);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 60px auto 30px auto;
+      background: rgba(30,40,60,0.92);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px #00c6ff33;
+      padding: 40px 32px;
+      backdrop-filter: blur(6px);
+      animation: fadeInUp 1.2s cubic-bezier(.23,1.01,.32,1) both;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 0.5em;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 16px #00c6ff77;
+      animation: pulse 2s infinite;
+    }
+    pre {
+      background: #181c22;
+      color: #00ffea;
+      border-radius: 10px;
+      padding: 18px 12px;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 1.05em;
+      max-height: 60vh;
+      overflow-y: auto;
+      box-shadow: 0 2px 16px #00c6ff22;
+      margin-top: 1.2em;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: none;
+      box-shadow: 0 2px 12px #00c6ff55;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 18px;
+    }
+    .btn:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 6px 24px #00c6ff99;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(60px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    @keyframes pulse {
+      0% { text-shadow: 0 0 8px #00c6ff88; }
+      50% { text-shadow: 0 0 24px #00c6ff; }
+      100% { text-shadow: 0 0 8px #00c6ff88; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blur-bg"></div>
+  <div class="container animate__animated animate__fadeInUp">
+    <h1>📝 Logs du serveur</h1>
+    <a href="/" class="btn">⬅ Retour à l'accueil</a>
+    <pre>{{ logs }}</pre>
+  </div>
+</body>
+</html>

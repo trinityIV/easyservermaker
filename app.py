@@ -1,4 +1,4 @@
-from flask import Flask, render_template, render_template_string, request, jsonify
+from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
 import requests
 from bs4 import BeautifulSoup
 import socket
@@ -154,32 +154,28 @@ def get_ip():
 
 app = Flask(__name__)
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
 def index():
     games = load_games()
-    cmd = None
     ip = get_ip()
-    ports = ""
-    if request.method == "POST":
-        val = request.form["game"]
-        appid, ports = val.split("|")
-        port_args = " ".join([f"-p {p.strip()}" for p in ports.split(",")])
-        cmd = f"docker run -it {port_args} easy-steam-server {appid}"
-    return render_template("index.html", games=games, cmd=cmd, ip=ip, ports=ports)
+    return render_template("index.html", games=games, ip=ip)
 
 @app.route("/games")
 def games():
     # Charge la liste depuis le fichier local
-    local_json_path = os.path.join(os.path.dirname(__file__), "game", "games_linux.json")
     try:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        local_json_path = os.path.join(base_dir, "game", "games_linux.json")
         with open(local_json_path, encoding="utf-8") as f:
             data = json.load(f)
-    except Exception:
-        data = {"games": [], "source": local_json_path, "last_update": "Erreur de chargement"}
-    games = data.get("games", [])
-    source = data.get("source", "")
-    last_update = data.get("last_update", "")
-    return render_template_string(GAMES_HTML, games=games, source=source, last_update=last_update)
+        games = data.get("games", [])
+        source = data.get("source", "")
+        last_update = data.get("last_update", "")
+        return render_template_string(GAMES_HTML, games=games, source=source, last_update=last_update)
+    except Exception as e:
+        # Log l'erreur pour debug
+        print("Erreur chargement /games :", e)
+        return "<h2>Erreur de chargement de la liste des jeux.<br>Détail : {}</h2>".format(e), 500
 
 # Nouvelle route pour la page de configuration détaillée d'un jeu
 @app.route("/game/<appid>")
@@ -371,6 +367,24 @@ def games_list():
     except Exception:
         data = {"games": [], "source": local_json_path, "last_update": "Erreur de chargement"}
     return jsonify(data)
+
+@app.route("/logs")
+def logs():
+    log_path = os.path.join(os.path.dirname(__file__), "server.log")
+    if not os.path.exists(log_path):
+        logs = "Aucun log trouvé."
+    else:
+        with open(log_path, encoding="utf-8", errors="ignore") as f:
+            logs = f.read()[-10000:]  # Limite à 10k derniers caractères
+    return render_template("logs.html", logs=logs)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+@app.errorhandler(503)
+def service_unavailable(e):
+    return render_template("503.html"), 503
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080)

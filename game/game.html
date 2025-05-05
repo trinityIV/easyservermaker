@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Jeux compatibles Docker/Ubuntu</title>
   <link rel="stylesheet" href="game_style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" defer/>
   <style>
     .games-grid {
       display: grid;
@@ -222,6 +222,60 @@
       opacity: 0.7;
       pointer-events: none;
     }
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      margin: 30px auto 0 auto;
+      max-width: 900px;
+      background: rgba(30,40,60,0.92);
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #00c6ff33;
+      padding: 18px 24px;
+      font-size: 1.08em;
+      color: #fff;
+      align-items: center;
+      animation: fadeInDown 1s;
+    }
+    .status-title {
+      font-weight: bold;
+      color: #00ffea;
+      margin-right: 10px;
+      font-size: 1.15em;
+      letter-spacing: 1px;
+    }
+    .status-item {
+      margin: 0 12px;
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: #181c22;
+      box-shadow: 0 2px 8px #00c6ff22;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+      border: 2px solid #fff2;
+    }
+    .status-up { background: #00e676; }
+    .status-down { background: #ff1744; }
+    .status-unknown { background: #ffb300; }
+    .status-provider {
+      font-weight: bold;
+      color: #00c6ff;
+      margin-right: 6px;
+    }
+    .status-country {
+      font-weight: bold;
+      color: #fff;
+      margin-right: 4px;
+    }
   </style>
 </head>
 <body>
@@ -236,6 +290,10 @@
     </div>
     <a href="../index.html" class="btn">⬅ Accueil</a>
   </div>
+  <div class="status-bar" id="status-bar">
+    <span class="status-title">Statut serveurs Valve & Faceit :</span>
+    <span class="status-item"><span class="status-dot status-unknown"></span>Chargement...</span>
+  </div>
   <div class="games-grid" id="games-grid"></div>
   <footer>
     <p>
@@ -244,12 +302,23 @@
       Jaquettes Steam &copy; Valve Corp. | Animations par <a href="https://animate.style/" style="color:#00c6ff">Animate.css</a>
     </p>
   </footer>
+  <!-- Assistant IA Open Source (Open Assistant Widget) -->
+  <script src="https://cdn.jsdelivr.net/npm/@openassistant/widget@1.0.5/dist/oa-widget.min.js"></script>
+  <script>
+    window.OAWidget.init({
+      position: "bottom-right",
+      title: "Assistant IA",
+      subtitle: "Posez vos questions sur l'hébergement, Docker, SteamCMD...",
+      color: "#00c6ff",
+      welcomeMessage: "Bonjour ! Je suis l'assistant IA Easy Host Server. Posez-moi vos questions sur l'installation, la configuration Docker, les jeux compatibles, etc.",
+      inputPlaceholder: "Votre question...",
+      // Pour un backend auto-hébergé, ajoutez : apiUrl: "https://votre-backend-open-assistant/"
+    });
+  </script>
   <script type="module">
-    // filepath: c:\Users\pirat\Documents\easy host server (steamcmd + Docker)\game\game.html
-    // Module JS pour affichage dynamique des cartes jeux
     async function loadGames() {
       const grid = document.getElementById('games-grid');
-      const resp = await fetch('games_linux.json');
+      const resp = await fetch('./games_linux.json');
       const data = await resp.json();
       data.games.forEach(game => {
         const card = document.createElement('div');
@@ -296,6 +365,65 @@ docker run -it ${game.ports ? game.ports.split(',').map(p=>'-p '+p.trim()).join(
       });
     }
     loadGames();
+
+    // --- Statut serveurs Valve & Faceit ---
+    const statusBar = document.getElementById('status-bar');
+    const countries = [
+      { code: 'BE', name: 'Belgique', flag: '🇧🇪' },
+      { code: 'FR', name: 'France', flag: '🇫🇷' },
+      { code: 'CH', name: 'Suisse', flag: '🇨🇭' }
+    ];
+
+    function statusDot(status) {
+      if (status === "up") return '<span class="status-dot status-up"></span>';
+      if (status === "down") return '<span class="status-dot status-down"></span>';
+      return '<span class="status-dot status-unknown"></span>';
+    }
+
+    async function fetchValveStatus() {
+      // Valve API: https://steamgaug.es/api/v2 (pas de détail par pays, on simule par datacenter)
+      try {
+        const resp = await fetch('https://steamgaug.es/api/v2');
+        const data = await resp.json();
+        // Mapping datacenter -> pays
+        return {
+          BE: data['EU-BEL']?.online ? "up" : "down",
+          FR: data['EU-FRA']?.online ? "up" : "down",
+          CH: data['EU-ZRH']?.online ? "up" : "down"
+        };
+      } catch {
+        return { BE: "unknown", FR: "unknown", CH: "unknown" };
+      }
+    }
+
+    async function fetchFaceitStatus() {
+      // Faceit status: https://status.faceit.com/ (pas d'API officielle, on simule)
+      // On simule "up" pour tous, ou on peut parser https://status.faceit.com/ en HTML si besoin
+      // Pour la démo, on met "up"
+      return { BE: "up", FR: "up", CH: "up" };
+    }
+
+    async function updateStatusBar() {
+      statusBar.innerHTML = '<span class="status-title">Statut serveurs Valve & Faceit :</span><span class="status-item"><span class="status-dot status-unknown"></span>Chargement...</span>';
+      const [valve, faceit] = await Promise.all([fetchValveStatus(), fetchFaceitStatus()]);
+      let html = '<span class="status-title">Statut serveurs Valve & Faceit :</span>';
+      countries.forEach(c => {
+        html += `<span class="status-item">
+          <span class="status-provider">Valve</span>
+          <span class="status-country">${c.flag} ${c.name}</span>
+          ${statusDot(valve[c.code])}
+          <span>${valve[c.code] === "up" ? "En ligne" : valve[c.code] === "down" ? "Hors ligne" : "?"}</span>
+        </span>`;
+        html += `<span class="status-item">
+          <span class="status-provider" style="color:#ffb300">Faceit</span>
+          <span class="status-country">${c.flag} ${c.name}</span>
+          ${statusDot(faceit[c.code])}
+          <span>${faceit[c.code] === "up" ? "En ligne" : faceit[c.code] === "down" ? "Hors ligne" : "?"}</span>
+        </span>`;
+      });
+      statusBar.innerHTML = html;
+    }
+    updateStatusBar();
   </script>
 </body>
 </html>

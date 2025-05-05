@@ -5,7 +5,6 @@
   <title>Easy Host Server - Accueil</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <style>
-    /* Copié de game.html, adapté pour l'accueil */
     body {
       background: linear-gradient(120deg, #232526 0%, #1de9b6 100%);
       min-height: 100vh;
@@ -37,54 +36,69 @@
       from { opacity: 0; transform: translateY(-40px);}
       to { opacity: 1; transform: translateY(0);}
     }
-    .form-section {
-      max-width: 520px;
-      margin: 40px auto 0 auto;
-      background: rgba(30,40,60,0.85);
-      border-radius: 24px;
-      box-shadow: 0 8px 40px #00c6ff33;
-      padding: 40px 32px;
-      backdrop-filter: blur(6px);
-      animation: fadeInUp 1.2s cubic-bezier(.23,1.01,.32,1) both;
-      z-index: 2;
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 32px;
+      margin: 60px auto 40px auto;
+      max-width: 1200px;
+      padding: 0 20px;
+      z-index: 1;
       position: relative;
     }
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(60px);}
-      to { opacity: 1; transform: translateY(0);}
-    }
-    label, select, button {
-      font-size: 1.1em;
-      margin-bottom: 1em;
-      display: block;
-      width: 100%;
-    }
-    select {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #00c6ff55;
-      background: #181c22;
-      color: #00ffea;
-      margin-bottom: 18px;
-    }
-    .btn {
-      display: inline-block;
-      background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
-      color: #fff;
-      padding: 12px 28px;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 1.1em;
-      text-decoration: none;
-      box-shadow: 0 2px 12px #00c6ff55;
-      transition: transform 0.2s, box-shadow 0.2s;
-      margin-top: 18px;
-      border: none;
+    .game-card {
+      background: linear-gradient(135deg, #1de9b6 0%, #232526 100%);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37), 0 0 24px #00ffb0aa;
+      overflow: hidden;
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 12px 18px 12px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      min-height: 340px;
+      position: relative;
     }
-    .btn:hover {
-      transform: scale(1.06) rotate(-1deg);
-      box-shadow: 0 6px 24px #00c6ff99;
+    .game-card:hover {
+      transform: scale(1.04) rotate(-1deg);
+      box-shadow: 0 16px 48px 0 #00c6ff55;
+      z-index: 2;
+    }
+    .game-cover {
+      width: 90%;
+      max-width: 220px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 24px #00c6ff33;
+      filter: drop-shadow(0 0 16px #00ffb0cc) saturate(1.2) brightness(1.1);
+      background: rgba(0,255,180,0.07);
+      border: 2px solid #00ffb055;
+    }
+    .game-title {
+      font-size: 1.1em;
+      font-weight: bold;
+      margin-bottom: 0.4em;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #000a;
+      color: #fff;
+      animation: pulse 2s infinite;
+      text-align: center;
+    }
+    .game-appid, .game-os {
+      font-size: 0.97em;
+      color: #00ffea;
+      margin-bottom: 0.2em;
+      text-align: center;
+    }
+    .game-os {
+      color: #aaa;
+      font-size: 0.93em;
+    }
+    @keyframes pulse {
+      0% { text-shadow: 0 0 8px #00c6ff88; }
+      50% { text-shadow: 0 0 24px #00c6ff; }
+      100% { text-shadow: 0 0 8px #00c6ff88; }
     }
     .docker-cmd {
       background: linear-gradient(90deg, #232526 60%, #00c6ff33 100%);
@@ -93,18 +107,27 @@
       font-family: 'Fira Mono', 'Consolas', monospace;
       font-size: 1.1em;
       color: #00ffea;
-      margin-bottom: 1.2em;
+      margin: 30px auto 1.2em auto;
       box-shadow: 0 2px 16px #00c6ff22;
       user-select: all;
       animation: fadeIn 1.5s;
       cursor: pointer;
+      max-width: 700px;
+      text-align: left;
+      display: none;
     }
-    .docker-cmd:active {
-      background: #00c6ff44;
+    .docker-cmd.active {
+      display: block;
     }
     .ports {
       color: #00ffea;
       font-weight: bold;
+    }
+    .info-bar {
+      text-align: center;
+      margin: 18px 0 0 0;
+      color: #00ffea;
+      font-size: 1.1em;
     }
     footer {
       text-align: center;
@@ -119,33 +142,71 @@
   <div class="blur-bg"></div>
   <div class="header-hero animate__animated animate__fadeInDown">
     <h1>🎮 Easy Host Server</h1>
-    <p>Sélectionnez un jeu pour générer la commande Docker adaptée.</p>
+    <p>Cliquez sur un jeu pour générer la commande Docker adaptée.</p>
     <a href="/games" class="btn">Voir la liste complète des jeux</a>
   </div>
-  <div class="form-section animate__animated animate__fadeInUp">
-    <form method="post">
-      <label for="game">Jeu :</label>
-      <select name="game" id="game" required>
-        {% for g in games %}
-        <option value="{{g.appid}}|{{g.ports}}">{{g.name}}</option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="btn">Générer la commande</button>
-    </form>
-    {% if cmd %}
-    <h2>Votre commande Docker :</h2>
-    <div class="docker-cmd" onclick="navigator.clipboard.writeText(this.innerText);this.style.background='#00c6ff44';this.innerText='Copié !';setTimeout(()=>{this.innerText='{{cmd}}';this.style.background='';},1200);">
-      {{cmd}}
+  <div class="games-grid animate__animated animate__fadeInUp" id="games-grid">
+    {% for g in games %}
+    <div class="game-card" data-appid="{{g.appid}}" data-ports="{{g.ports|default('')}}" data-name="{{g.name}}">
+      <img class="game-cover" src="{{g.cover or 'https://cdn.cloudflare.steamstatic.com/steam/apps/' ~ g.appid ~ '/header.jpg'}}" alt="cover">
+      <div class="game-title">{{g.name}}</div>
+      <div class="game-appid">AppID: {{g.appid}}</div>
+      <div class="game-os">{{g.os}}</div>
+      {% if g.ports %}
+      <div class="game-os">Ports: <span class="ports">{{g.ports}}</span></div>
+      {% endif %}
     </div>
-    <h3>IP du serveur : <span style="color:#00ffea">{{ip}}</span></h3>
-    <p>Ports ouverts : <span class="ports">{{ports}}</span></p>
-    {% endif %}
+    {% endfor %}
   </div>
+  <div class="docker-cmd" id="docker-cmd"></div>
+  <div class="info-bar" id="info-bar"></div>
   <footer>
     <p>
       Projet open-source. Fait avec ❤️ pour la communauté gaming.<br>
       Jaquettes Steam &copy; Valve Corp. | Animations par <a href="https://animate.style/" style="color:#00c6ff">Animate.css</a>
     </p>
   </footer>
+  <!-- Assistant IA Open Source (Open Assistant Widget) -->
+  <script src="https://cdn.jsdelivr.net/npm/@openassistant/widget@1.0.5/dist/oa-widget.min.js"></script>
+  <script>
+    window.OAWidget.init({
+      position: "bottom-right",
+      title: "Assistant IA",
+      subtitle: "Posez vos questions sur l'hébergement, Docker, SteamCMD...",
+      color: "#00c6ff",
+      welcomeMessage: "Bonjour ! Je suis l'assistant IA Easy Host Server. Posez-moi vos questions sur l'installation, la configuration Docker, les jeux compatibles, etc.",
+      inputPlaceholder: "Votre question...",
+      // Pour un backend auto-hébergé, ajoutez : apiUrl: "https://votre-backend-open-assistant/"
+    });
+  </script>
+  <script>
+    // Affiche la commande Docker quand on clique sur une jaquette
+    const grid = document.getElementById('games-grid');
+    const dockerCmd = document.getElementById('docker-cmd');
+    const infoBar = document.getElementById('info-bar');
+    const ip = "{{ip}}";
+    grid.addEventListener('click', function(e) {
+      let card = e.target.closest('.game-card');
+      if (!card) return;
+      let appid = card.getAttribute('data-appid');
+      let ports = card.getAttribute('data-ports');
+      let name = card.getAttribute('data-name');
+      let portArgs = '';
+      if (ports) {
+        portArgs = ports.split(',').map(p => '-p ' + p.trim()).join(' ');
+      }
+      let cmd = `docker run -it ${portArgs} easy-steam-server ${appid}`;
+      dockerCmd.innerText = cmd;
+      dockerCmd.classList.add('active');
+      dockerCmd.onclick = function() {
+        navigator.clipboard.writeText(cmd);
+        dockerCmd.style.background='#00c6ff44';
+        dockerCmd.innerText='Copié !';
+        setTimeout(()=>{dockerCmd.innerText=cmd;dockerCmd.style.background='';},1200);
+      };
+      infoBar.innerHTML = `<b>${name}</b> — IP du serveur : <span style="color:#00ffea">${ip}</span> — Ports : <span class="ports">${ports || 'voir doc'}</span>`;
+      window.scrollTo({top: dockerCmd.offsetTop-40, behavior:'smooth'});
+    });
+  </script>
 </body>
 </html>

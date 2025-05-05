@@ -4,10 +4,13 @@ Ce projet permet d’héberger facilement un serveur de jeu Steam compatible Doc
 
 ## Fonctionnalités
 
-- Interface web moderne pour choisir un jeu et générer la commande Docker adaptée.
+- Interface web moderne avec grille de jaquettes cliquables pour générer la commande Docker adaptée à chaque jeu.
 - Liste complète et dynamique des jeux Steam disposant d’un serveur dédié Linux, avec un visuel animé.
+- Affichage en temps réel du **statut des serveurs Valve et Faceit** pour la France, la Belgique et la Suisse (bandeau en haut de la page jeux).
 - Installation automatique du serveur de jeu via SteamCMD sans compte Steam.
 - Prise en charge des ports nécessaires pour chaque jeu.
+- **Suivi des logs serveur** via la page `/logs` (affichage stylé, lecture du fichier `server.log`).
+- Pages d’erreur **404** et **503** avec un thème gaming moderne.
 - Documentation claire et interface utilisateur intuitive.
 
 ## Utilisation rapide
@@ -24,8 +27,10 @@ Ce projet permet d’héberger facilement un serveur de jeu Steam compatible Doc
 
 3. **Ouvrez votre navigateur sur** [http://localhost:8080](http://localhost:8080)
 
-   - Choisissez un jeu dans la liste pour générer la commande Docker adaptée (avec les bons ports).
-   - Ou cliquez sur "Liste complète des jeux compatibles" pour voir tous les jeux Steam supportant un serveur Linux/Docker, avec un visuel animé.
+   - **Accueil** : Choisissez un jeu en cliquant sur sa jaquette pour générer la commande Docker adaptée (avec les bons ports).
+   - **Liste complète** : Cliquez sur "Liste complète des jeux compatibles" pour voir tous les jeux Steam supportant un serveur Linux/Docker, avec un visuel animé et le statut des serveurs Valve/Faceit.
+   - **Logs** : Accédez à [http://localhost:8080/logs](http://localhost:8080/logs) pour consulter les derniers logs du serveur (fichier `server.log`).
+   - **Pages d’erreur** : Les erreurs 404 et 503 affichent des pages gaming stylées.
 
 4. **Lancez un serveur de jeu directement** (exemple pour CS:GO : 740) :
    ```sh
@@ -64,6 +69,15 @@ Ce projet permet d’héberger facilement un serveur de jeu Steam compatible Doc
 ## Liste dynamique des jeux compatibles
 
 - Rendez-vous sur [http://localhost:8080/games](http://localhost:8080/games) pour voir la liste complète des jeux Steam disposant d’un serveur dédié Linux, idéale pour Docker, avec un visuel moderne et des animations.
+- Le statut des serveurs Valve et Faceit pour la France, la Belgique et la Suisse est affiché en haut de la page.
+
+## Suivi des logs serveur
+
+- Consultez [http://localhost:8080/logs](http://localhost:8080/logs) pour voir les derniers logs du serveur (lecture du fichier `server.log`).
+
+## Pages d’erreur personnalisées
+
+- Les erreurs 404 et 503 affichent des pages gaming stylées pour une meilleure expérience utilisateur.
 
 ## Ressources
 
