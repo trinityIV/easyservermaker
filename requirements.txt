@@ -1,4 +1,9 @@
-flask
-requests
-beautifulsoup4
-steamctl
+flask>=2.2
+requests>=2.28
+beautifulsoup4>=4.11
+openai
+python-dotenv
+# Pour l'IA gratuite côté backend, tu peux tester transformers si tu veux du HuggingFace local (attention à la RAM)
+# transformers
+# torch
+# Si tu utilises l'IA côté frontend (OpenAssistant Widget), rien à ajouter ici

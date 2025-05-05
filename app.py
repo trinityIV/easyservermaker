@@ -1,10 +1,15 @@
-from flask import Flask, render_template, render_template_string, request, jsonify, send_from_directory, abort
-import requests
-from bs4 import BeautifulSoup
+from flask import Flask, render_template, render_template_string, jsonify, request
 import socket
 import json
 import os
-import urllib.request
+import requests
+
+# Ajoute ce bloc pour charger .env si présent
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 def load_games():
     local_json_path = os.path.join(os.path.dirname(__file__), "game", "games_linux.json")
@@ -21,7 +26,7 @@ HTML = """
 <head>
     <meta charset="UTF-8">
     <title>Choisissez votre jeu Steam</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 <div class="hero">
@@ -58,7 +63,7 @@ GAMES_HTML = """
 <head>
     <meta charset="UTF-8">
     <title>Liste des jeux compatibles Linux/Docker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
     <style>
@@ -128,7 +133,7 @@ GAMES_HTML = """
 </div>
 <footer>
     <p>
-      Liste extraite de <a href="{{source}}" style="color:#00c6ff">Valve Developer Wiki</a>
+      Liste extraite de <a href="{{source_url}}" style="color:#00c6ff">Valve Developer Wiki</a>
       <br>
       Dernière mise à jour : {{last_update}}
       <br>
@@ -152,7 +157,7 @@ def get_ip():
     except Exception:
         return "localhost"
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="/static")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -162,25 +167,27 @@ def index():
 
 @app.route("/games")
 def games():
-    # Charge la liste depuis le fichier local
     try:
         base_dir = os.path.dirname(os.path.abspath(__file__))
         local_json_path = os.path.join(base_dir, "game", "games_linux.json")
+        if not os.path.exists(local_json_path):
+            return "<h2>Erreur : Fichier games_linux.json introuvable.</h2>", 500
         with open(local_json_path, encoding="utf-8") as f:
             data = json.load(f)
         games = data.get("games", [])
-        # Passe les variables dans un seul dict context pour éviter le conflit d'arguments
-        context = dict(games=games, source=data.get("source", ""), last_update=data.get("last_update", ""))
-        return render_template_string(GAMES_HTML, **context)
+        context = dict(
+            games=games,
+            source_url=data.get("source", ""),
+            last_update=data.get("last_update", "")
+        )
+        html = GAMES_HTML.replace("{{source}}", "{{source_url}}")
+        return render_template_string(html, **context)
     except Exception as e:
-        # Log l'erreur pour debug
         print("Erreur chargement /games :", e)
         return "<h2>Erreur de chargement de la liste des jeux.<br>Détail : {}</h2>".format(e), 500
 
-# Nouvelle route pour la page de configuration détaillée d'un jeu
 @app.route("/game/<appid>")
 def game_detail(appid):
-    # Charge la liste depuis le fichier local
     local_json_path = os.path.join(os.path.dirname(__file__), "game", "games_linux.json")
     try:
         with open(local_json_path, encoding="utf-8") as f:
@@ -190,14 +197,13 @@ def game_detail(appid):
     games = data.get("games", [])
     game = next((g for g in games if g.get("appid") == appid), None)
     if not game:
-        return "<h2>Jeu non trouvé</h2>", 404
-    # Génère la commande Docker par défaut
+        # Utilise la page d'erreur 404 stylée
+        return render_template("404.html"), 404
     ports = game.get("ports", "")
-    port_args = " ".join([f"-p {p.strip()}" for p in ports.split(",")]) if ports else ""
-    docker_cmd = f"docker run -it {port_args} easy-steam-server {appid}"
+    port_args = " ".join([f"-p {p.strip()}" for p in ports.split(",") if p.strip()]) if ports else ""
+    docker_cmd = f"docker run -it{(' ' + port_args) if port_args else ''} easy-steam-server {appid}"
     return render_template_string(GAME_DETAIL_HTML, game=game, docker_cmd=docker_cmd)
 
-# Nouveau template pour la page de configuration d'un jeu
 GAME_DETAIL_HTML = """
 <!DOCTYPE html>
 <html lang="fr">
@@ -375,8 +381,37 @@ def logs():
         logs = "Aucun log trouvé."
     else:
         with open(log_path, encoding="utf-8", errors="ignore") as f:
-            logs = f.read()[-10000:]  # Limite à 10k derniers caractères
+            logs = f.read()[-10000:]
     return render_template("logs.html", logs=logs)
+
+@app.route("/api/mistral_chat", methods=["POST"])
+def mistral_chat():
+    api_key = os.environ.get("MISTRAL_API_KEY")
+    if not api_key:
+        return jsonify({"error": "Clé API Mistral manquante (MISTRAL_API_KEY)"}), 403
+    data = request.get_json()
+    user_message = data.get("message", "")
+    if not user_message:
+        return jsonify({"error": "Message manquant"}), 400
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "mistral-tiny",  # modèle gratuit
+        "messages": [
+            {"role": "system", "content": "Tu es un assistant IA français, expert Docker, SteamCMD et serveurs de jeux. Réponds de façon concise et claire."},
+            {"role": "user", "content": user_message}
+        ]
+    }
+    try:
+        resp = requests.post("https://api.mistral.ai/v1/chat/completions", headers=headers, json=payload, timeout=20)
+        resp.raise_for_status()
+        result = resp.json()
+        content = result["choices"][0]["message"]["content"]
+        return jsonify({"response": content})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -387,4 +422,5 @@ def service_unavailable(e):
     return render_template("503.html"), 503
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    # Pour le développement, active le debug. Pour la prod, désactive-le.
+    app.run(host="0.0.0.0", port=8080, debug=False)

@@ -6,7 +6,9 @@ if [ -z "$1" ]; then
   echo "Accédez à http://localhost:8080 dans votre navigateur."
   echo "Pour lancer un serveur de jeu directement :"
   echo "  docker run -it -p 27015:27015/udp easy-steam-server 740"
-  exec python3 /app.py
+  # S'assure que le dossier game existe
+  mkdir -p /app/game
+  exec python3 /app/app.py
 fi
 
 APPID="$1"
@@ -17,7 +19,10 @@ echo "Installation du serveur pour l'AppID $APPID..."
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-/opt/steamcmd/steamcmd.sh +login anonymous +force_install_dir "$INSTALL_DIR" +app_update "$APPID" validate +quit
+/opt/steamcmd/steamcmd.sh +login anonymous +force_install_dir "$INSTALL_DIR" +app_update "$APPID" validate +quit || {
+  echo "Erreur lors de l'installation du serveur SteamCMD pour AppID $APPID"
+  exit 2
+}
 
 echo "Serveur installé dans $INSTALL_DIR"
 echo "Pour lancer le serveur, consultez la documentation du jeu."
