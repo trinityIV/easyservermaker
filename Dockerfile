@@ -27,4 +27,6 @@ COPY app.py /app.py
 USER steam
 WORKDIR /home/steam
 
+EXPOSE 8080
+
 ENTRYPOINT ["/entrypoint.sh"]

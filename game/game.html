@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Jeux compatibles Docker/Ubuntu</title>
+  <link rel="stylesheet" href="game_style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px;
+      margin: 60px auto 40px auto;
+      max-width: 1200px;
+      padding: 0 20px;
+      z-index: 1;
+      position: relative;
+    }
+    .flip-card {
+      background: linear-gradient(135deg, #1de9b6 0%, #232526 100%);
+      width: 100%;
+      height: 420px;
+      perspective: 1200px;
+      cursor: pointer;
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37), 0 0 24px #00ffb0aa;
+      border-radius: 22px;
+      overflow: visible;
+    }
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.7s cubic-bezier(.23,1.01,.32,1);
+      transform-style: preserve-3d;
+      border-radius: 22px;
+    }
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37), 0 0 32px #00ffb055;
+      overflow: hidden;
+      backface-visibility: hidden;
+      background: linear-gradient(135deg, #1de9b6 0%, #414345 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .flip-card-front::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      border-radius: 22px;
+      background: linear-gradient(120deg, #00ffb055 0%, #ffffff11 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .flip-card-front {
+      z-index: 2;
+      animation: fadeIn 1.2s;
+    }
+    .flip-card-back {
+      transform: rotateY(180deg);
+      z-index: 3;
+      padding: 28px 18px 18px 18px;
+      animation: fadeIn 1.2s;
+      justify-content: flex-start;
+    }
+    .game-cover {
+      width: 90%;
+      max-width: 320px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 24px #00c6ff33;
+      transition: box-shadow 0.2s;
+      filter: drop-shadow(0 0 16px #00ffb0cc) saturate(1.2) brightness(1.1);
+      position: relative;
+      z-index: 2;
+      background: rgba(0,255,180,0.07);
+      border: 2px solid #00ffb055;
+    }
+    .flip-card-front:hover .game-cover {
+      box-shadow: 0 8px 40px #00c6ff77;
+      filter: drop-shadow(0 0 32px #00ffb0) saturate(1.3) brightness(1.2);
+      border-color: #00ffb0cc;
+    }
+    .game-title {
+      font-size: 1.25em;
+      font-weight: bold;
+      margin-bottom: 0.4em;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #000a;
+      color: #fff;
+      animation: pulse 2s infinite;
+    }
+    .game-appid, .game-os {
+      font-size: 1em;
+      color: #00ffea;
+      margin-bottom: 0.2em;
+    }
+    .game-os {
+      color: #aaa;
+      font-size: 0.95em;
+    }
+    .flip-card-back .docker-cmd {
+      margin: 0.7em 0 0.7em 0;
+      font-size: 1em;
+      padding: 10px 8px;
+      border-radius: 8px;
+      background: #181c22;
+      color: #00ffea;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      box-shadow: 0 2px 8px #00c6ff22;
+      user-select: all;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .flip-card-back .docker-cmd:active {
+      background: #00c6ff44;
+    }
+    .flip-card-back .ports {
+      color: #00ffea;
+      font-weight: bold;
+    }
+    .flip-card-back .desc {
+      color: #fff;
+      font-size: 0.98em;
+      margin-bottom: 0.7em;
+    }
+    .flip-card-back .ubuntu {
+      margin-top: 0.7em;
+      background: rgba(255,255,255,0.04);
+      border-radius: 8px;
+      padding: 10px 10px;
+      font-size: 0.97em;
+      box-shadow: 0 2px 8px #00c6ff22;
+    }
+    .flip-card-back .ubuntu pre {
+      background: #181c22;
+      color: #00ffea;
+      border-radius: 6px;
+      padding: 7px 8px;
+      font-size: 0.97em;
+      margin: 0.5em 0 0 0;
+      overflow-x: auto;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0;}
+      to { opacity: 1;}
+    }
+    @keyframes pulse {
+      0% { text-shadow: 0 0 8px #00c6ff88; }
+      50% { text-shadow: 0 0 24px #00c6ff; }
+      100% { text-shadow: 0 0 8px #00c6ff88; }
+    }
+    .flip-tip {
+      color: #00c6ff;
+      font-size: 1.1em;
+      text-align: center;
+      margin-bottom: 18px;
+      margin-top: 12px;
+      letter-spacing: 1px;
+      animation: pulse 2s infinite;
+    }
+    .header-hero {
+      text-align: center;
+      padding: 60px 20px 20px 20px;
+      background: rgba(30, 30, 40, 0.95);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      animation: fadeInDown 1s;
+      margin-bottom: 0;
+      z-index: 10;
+      position: relative;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: none;
+      box-shadow: 0 2px 12px #00c6ff55;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 18px;
+    }
+    .btn:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 6px 24px #00c6ff99;
+    }
+    footer {
+      text-align: center;
+      padding: 30px 0 10px 0;
+      color: #aaa;
+      font-size: 1em;
+      letter-spacing: 1px;
+    }
+    body {
+      background: linear-gradient(120deg, #232526 0%, #1de9b6 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+    }
+    .blur-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      filter: blur(8px) brightness(0.7) saturate(1.2);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="blur-bg"></div>
+  <div class="header-hero animate__animated animate__fadeInDown">
+    <h1>🌟 Jeux compatibles Docker & Ubuntu</h1>
+    <p>Retournez une carte pour voir comment héberger facilement votre serveur !</p>
+    <div class="flip-tip">Cliquez sur une carte pour la retourner</div>
+    <div style="margin:10px 0 0 0;color:#00ffb0;font-size:1.05em;">
+      <b>Astuce :</b> Ces serveurs fonctionnent sur Hostinger VPS, OVH, Scaleway, Hetzner, etc.<br>
+      <span style="color:#fff;">Utilisez un VPS Linux avec Docker pour héberger facilement votre serveur de jeu SteamCMD.</span>
+    </div>
+    <a href="../index.html" class="btn">⬅ Accueil</a>
+  </div>
+  <div class="games-grid" id="games-grid"></div>
+  <footer>
+    <p>
+      Liste extraite de <a href="https://developer.valvesoftware.com/wiki/Dedicated_Servers_List" style="color:#00c6ff">Valve Developer Wiki</a>
+      <br>
+      Jaquettes Steam &copy; Valve Corp. | Animations par <a href="https://animate.style/" style="color:#00c6ff">Animate.css</a>
+    </p>
+  </footer>
+  <script type="module">
+    // filepath: c:\Users\pirat\Documents\easy host server (steamcmd + Docker)\game\game.html
+    // Module JS pour affichage dynamique des cartes jeux
+    async function loadGames() {
+      const grid = document.getElementById('games-grid');
+      const resp = await fetch('games_linux.json');
+      const data = await resp.json();
+      data.games.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'flip-card animate__animated animate__zoomIn';
+        card.innerHTML = `
+          <div class="flip-card-inner">
+            <div class="flip-card-front">
+              <img class="game-cover" src="${game.cover || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/header.jpg`}" alt="cover">
+              <div class="game-title">${game.name}</div>
+              <div class="game-appid">AppID: ${game.appid}</div>
+              <div class="game-os">${game.os}</div>
+            </div>
+            <div class="flip-card-back">
+              <div class="game-title">${game.name}</div>
+              <div class="desc">AppID: <b>${game.appid}</b></div>
+              <div class="desc">Ports recommandés : <span class="ports">${game.ports || "Voir doc"}</span></div>
+              <div class="desc">OS : ${game.os}</div>
+              <div class="docker-cmd" title="Cliquez pour copier" onclick="navigator.clipboard.writeText(this.innerText);this.style.background='#00c6ff44';this.innerText='Copié !';setTimeout(()=>{this.innerText='docker run -it ${game.ports ? game.ports.split(',').map(p=>'-p '+p.trim()).join(' ') : ''} easy-steam-server ${game.appid}';this.style.background='';},1200);">
+                docker run -it ${game.ports ? game.ports.split(',').map(p=>'-p '+p.trim()).join(' ') : ''} easy-steam-server ${game.appid}
+              </div>
+              <div class="ubuntu">
+                <b>Installer Docker sur Ubuntu :</b>
+                <pre>
+sudo apt update
+sudo apt install docker.io -y
+sudo systemctl enable --now docker
+sudo usermod -aG docker \$USER
+# Déconnectez-vous puis reconnectez-vous pour appliquer les droits
+                </pre>
+                <b>Lancer le serveur :</b>
+                <pre>
+docker run -it ${game.ports ? game.ports.split(',').map(p=>'-p '+p.trim()).join(' ') : ''} easy-steam-server ${game.appid}
+                </pre>
+              </div>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', function(e) {
+          // Ne retourne pas la carte si clic sur bouton copier
+          if (e.target.classList.contains('docker-cmd')) return;
+          card.classList.toggle('flipped');
+        });
+        grid.appendChild(card);
+      });
+    }
+    loadGames();
+  </script>
+</body>
+</html>
