@@ -303,17 +303,15 @@
     </p>
   </footer>
   <!-- Assistant IA Open Source (Open Assistant Widget) -->
-  <script src="https://cdn.jsdelivr.net/npm/@openassistant/widget@1.0.5/dist/oa-widget.min.js"></script>
-  <script>
-    window.OAWidget.init({
-      position: "bottom-right",
-      title: "Assistant IA",
-      subtitle: "Posez vos questions sur l'hébergement, Docker, SteamCMD...",
-      color: "#00c6ff",
-      welcomeMessage: "Bonjour ! Je suis l'assistant IA Easy Host Server. Posez-moi vos questions sur l'installation, la configuration Docker, les jeux compatibles, etc.",
-      inputPlaceholder: "Votre question...",
-      // Pour un backend auto-hébergé, ajoutez : apiUrl: "https://votre-backend-open-assistant/"
-    });
+  <script src="https://cdn.jsdelivr.net/npm/@openassistant/widget@1.0.5/dist/oa-widget.min.js"
+    onload="if(window.OAWidget && OAWidget.init){OAWidget.init({
+      position: 'bottom-right',
+      title: 'Assistant IA',
+      subtitle: 'Posez vos questions sur l\'hébergement, Docker, SteamCMD...',
+      color: '#00c6ff',
+      welcomeMessage: 'Bonjour ! Je suis l\'assistant IA Easy Host Server. Posez-moi vos questions sur l\'installation, la configuration Docker, les jeux compatibles, etc.',
+      inputPlaceholder: 'Votre question...'
+    });}">
   </script>
   <script type="module">
     async function loadGames() {
