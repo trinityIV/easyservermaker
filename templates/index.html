@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Easy Host Server - Accueil</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <style>
+    /* Copié de game.html, adapté pour l'accueil */
+    body {
+      background: linear-gradient(120deg, #232526 0%, #1de9b6 100%);
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+    }
+    .blur-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      filter: blur(8px) brightness(0.7) saturate(1.2);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    .header-hero {
+      text-align: center;
+      padding: 60px 20px 20px 20px;
+      background: rgba(30, 30, 40, 0.95);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      animation: fadeInDown 1s;
+      margin-bottom: 0;
+      z-index: 10;
+      position: relative;
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-40px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    .form-section {
+      max-width: 520px;
+      margin: 40px auto 0 auto;
+      background: rgba(30,40,60,0.85);
+      border-radius: 24px;
+      box-shadow: 0 8px 40px #00c6ff33;
+      padding: 40px 32px;
+      backdrop-filter: blur(6px);
+      animation: fadeInUp 1.2s cubic-bezier(.23,1.01,.32,1) both;
+      z-index: 2;
+      position: relative;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(60px);}
+      to { opacity: 1; transform: translateY(0);}
+    }
+    label, select, button {
+      font-size: 1.1em;
+      margin-bottom: 1em;
+      display: block;
+      width: 100%;
+    }
+    select {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #00c6ff55;
+      background: #181c22;
+      color: #00ffea;
+      margin-bottom: 18px;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.1em;
+      text-decoration: none;
+      box-shadow: 0 2px 12px #00c6ff55;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 18px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      transform: scale(1.06) rotate(-1deg);
+      box-shadow: 0 6px 24px #00c6ff99;
+    }
+    .docker-cmd {
+      background: linear-gradient(90deg, #232526 60%, #00c6ff33 100%);
+      border-radius: 10px;
+      padding: 18px 12px;
+      font-family: 'Fira Mono', 'Consolas', monospace;
+      font-size: 1.1em;
+      color: #00ffea;
+      margin-bottom: 1.2em;
+      box-shadow: 0 2px 16px #00c6ff22;
+      user-select: all;
+      animation: fadeIn 1.5s;
+      cursor: pointer;
+    }
+    .docker-cmd:active {
+      background: #00c6ff44;
+    }
+    .ports {
+      color: #00ffea;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 30px 0 10px 0;
+      color: #aaa;
+      font-size: 1em;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <div class="blur-bg"></div>
+  <div class="header-hero animate__animated animate__fadeInDown">
+    <h1>🎮 Easy Host Server</h1>
+    <p>Sélectionnez un jeu pour générer la commande Docker adaptée.</p>
+    <a href="/games" class="btn">Voir la liste complète des jeux</a>
+  </div>
+  <div class="form-section animate__animated animate__fadeInUp">
+    <form method="post">
+      <label for="game">Jeu :</label>
+      <select name="game" id="game" required>
+        {% for g in games %}
+        <option value="{{g.appid}}|{{g.ports}}">{{g.name}}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn">Générer la commande</button>
+    </form>
+    {% if cmd %}
+    <h2>Votre commande Docker :</h2>
+    <div class="docker-cmd" onclick="navigator.clipboard.writeText(this.innerText);this.style.background='#00c6ff44';this.innerText='Copié !';setTimeout(()=>{this.innerText='{{cmd}}';this.style.background='';},1200);">
+      {{cmd}}
+    </div>
+    <h3>IP du serveur : <span style="color:#00ffea">{{ip}}</span></h3>
+    <p>Ports ouverts : <span class="ports">{{ports}}</span></p>
+    {% endif %}
+  </div>
+  <footer>
+    <p>
+      Projet open-source. Fait avec ❤️ pour la communauté gaming.<br>
+      Jaquettes Steam &copy; Valve Corp. | Animations par <a href="https://animate.style/" style="color:#00c6ff">Animate.css</a>
+    </p>
+  </footer>
+</body>
+</html>

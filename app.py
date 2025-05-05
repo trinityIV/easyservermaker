@@ -1,4 +1,4 @@
-from flask import Flask, render_template_string, request, jsonify
+from flask import Flask, render_template, render_template_string, request, jsonify
 import requests
 from bs4 import BeautifulSoup
 import socket
@@ -6,14 +6,14 @@ import json
 import os
 import urllib.request
 
-GAMES = [
-    {"name": "CS:GO", "appid": "740", "ports": "27015:27015/udp"},
-    {"name": "ARK: Survival Evolved", "appid": "376030", "ports": "7777:7777/udp,27015:27015/udp"},
-    {"name": "Team Fortress 2", "appid": "232250", "ports": "27015:27015/udp"},
-    {"name": "Rust", "appid": "258550", "ports": "28015:28015/udp"},
-    {"name": "Unturned", "appid": "1110390", "ports": "27015:27015/udp"},
-    # Ajoutez d'autres jeux ici
-]
+def load_games():
+    local_json_path = os.path.join(os.path.dirname(__file__), "game", "games_linux.json")
+    try:
+        with open(local_json_path, encoding="utf-8") as f:
+            data = json.load(f)
+        return data.get("games", [])
+    except Exception:
+        return []
 
 HTML = """
 <!DOCTYPE html>
@@ -156,6 +156,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    games = load_games()
     cmd = None
     ip = get_ip()
     ports = ""
@@ -164,7 +165,7 @@ def index():
         appid, ports = val.split("|")
         port_args = " ".join([f"-p {p.strip()}" for p in ports.split(",")])
         cmd = f"docker run -it {port_args} easy-steam-server {appid}"
-    return render_template_string(HTML, games=GAMES, cmd=cmd, ip=ip, ports=ports)
+    return render_template("index.html", games=games, cmd=cmd, ip=ip, ports=ports)
 
 @app.route("/games")
 def games():
